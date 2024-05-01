@@ -25,24 +25,13 @@ pub fn render(app: &mut App, f: &mut Frame) {
     .title("topic")
     .title_alignment(Alignment::Left)
     .borders(Borders::ALL)
-    .style(Style::default().fg(Color::Gray));
+    .style(app.widgets[0].get_style());
 
   let group_id = Block::default()
     .title("group id")
     .title_alignment(Alignment::Left)
     .borders(Borders::ALL)
-    .style(Style::default().fg(Color::Gray));
-
-  // if let Some(widget) = app.active_widget {
-  //   match widget {
-  //     Widget::Topic => {
-  //       &topic.style(Style::default().fg(Color::Cyan));
-  //     }
-  //     Widget::GroupId => {
-  //       &group_id.style(Style::default().fg(Color::Cyan));
-  //     }
-  //   }
-  // }
+    .style(app.widgets[1].get_style());
 
   f.render_widget(help, sub_layout[0]);
   f.render_widget(topic, sub_layout[1]);
@@ -66,3 +55,20 @@ pub fn render(app: &mut App, f: &mut Frame) {
   //   parent_layout[1],
   // )
 }
+
+impl Widget {
+  fn get_style(&self) -> Style {
+    match self {
+       Widget::Topic { value, is_active } => check_is_active(*is_active),
+       Widget::GroupId { value, is_active } => check_is_active(*is_active)
+    }
+  }
+}
+
+  fn check_is_active(is_active: bool) -> Style {
+    if is_active {
+      Style::default().fg(Color::Cyan)
+    } else {
+      Style::default().fg(Color::Gray)
+    }
+  }
