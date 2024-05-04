@@ -21,11 +21,13 @@ pub fn render(app: &mut App, f: &mut Frame) {
   let help = Paragraph::new(String::from("Press ^j and ^k to move up and down"))
     .block(Block::default().borders(Borders::NONE));
 
-  let topic = Block::default()
-    .title("topic")
-    .title_alignment(Alignment::Left)
-    .borders(Borders::ALL)
-    .style(app.widgets[0].get_style());
+  let topic = Paragraph::new(String::from(&app.buffer)).block(
+    Block::default()
+      .title("topic")
+      .title_alignment(Alignment::Left)
+      .borders(Borders::ALL)
+      .style(app.widgets[0].get_style()),
+  );
 
   let group_id = Block::default()
     .title("group id")
@@ -59,16 +61,16 @@ pub fn render(app: &mut App, f: &mut Frame) {
 impl Widget {
   fn get_style(&self) -> Style {
     match self {
-       Widget::Topic { value, is_active } => check_is_active(*is_active),
-       Widget::GroupId { value, is_active } => check_is_active(*is_active)
+      Widget::Topic { is_active, .. } => check_is_active(*is_active),
+      Widget::GroupId { is_active, .. } => check_is_active(*is_active),
     }
   }
 }
 
-  fn check_is_active(is_active: bool) -> Style {
-    if is_active {
-      Style::default().fg(Color::Cyan)
-    } else {
-      Style::default().fg(Color::Gray)
-    }
+fn check_is_active(is_active: bool) -> Style {
+  if is_active {
+    Style::default().fg(Color::Cyan)
+  } else {
+    Style::default().fg(Color::Gray)
   }
+}
