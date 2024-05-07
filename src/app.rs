@@ -2,39 +2,31 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Widget {
-  Topic {
-    value: Option<String>,
-    is_active: bool,
-  },
-  GroupId {
-    value: Option<String>,
-    is_active: bool,
-  },
+  Topic,
+  GroupId,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Consumer {
+  pub topic: String,
+  pub group_id: String,
 }
 
 #[derive(Debug)]
 pub struct App {
-  pub widgets: [Widget; 2],
   pub active_widget: Option<Widget>,
-  pub buffer: String,
+  pub consumer: Consumer,
   pub should_quit: bool,
 }
 
 impl App {
   pub fn new() -> Self {
     App {
-      widgets: [
-        Widget::Topic {
-          value: None,
-          is_active: false,
-        },
-        Widget::GroupId {
-          value: None,
-          is_active: false,
-        },
-      ],
+      consumer: Consumer {
+        topic: String::from(""),
+        group_id: String::from(""),
+      },
       active_widget: None,
-      buffer: String::from(""),
       should_quit: false,
     }
   }
@@ -43,46 +35,27 @@ impl App {
     match key_event.code {
       KeyCode::Esc => self.should_quit = true,
       KeyCode::Char('j') if key_event.modifiers == KeyModifiers::CONTROL => {
-        if let Widget::Topic {
-          ref mut is_active, ..
-        } = self.widgets[0]
-        {
-          *is_active = false
-        }
-
-        if let Widget::GroupId {
-          ref mut is_active, ..
-        } = self.widgets[1]
-        {
-          *is_active = true;
-          self.active_widget = Some(self.widgets[1].clone())
-        }
+        self.active_widget = Some(Widget::GroupId)
       }
       KeyCode::Char('k') if key_event.modifiers == KeyModifiers::CONTROL => {
-        if let Widget::Topic {
-          ref mut is_active, ..
-        } = self.widgets[0]
-        {
-          *is_active = true;
-          self.active_widget = Some(self.widgets[1].clone())
-        }
-
-        if let Widget::GroupId {
-          ref mut is_active, ..
-        } = self.widgets[1]
-        {
-          *is_active = false
-        }
+        self.active_widget = Some(Widget::Topic)
       }
-
-      // KeyCode::Right | KeyCode::Char('j') => self.counter += 1,
-      // KeyCode::Left | KeyCode::Char('k') => self.counter -= 1,
       KeyCode::Backspace if self.active_widget != None => {
-        self.buffer.pop();
+        self.get_active_buffer().pop();
       }
-      KeyCode::Char(value) if self.active_widget != None => self.buffer.push(value),
-
+      KeyCode::Char(value) if self.active_widget != None => self.get_active_buffer().push(value),
       _ => {}
     };
+  }
+
+  pub fn get_active_buffer(&mut self) -> &mut String {
+    if let Some(widget) = &self.active_widget {
+      match widget {
+        Widget::Topic => &mut self.consumer.topic,
+        Widget::GroupId => &mut self.consumer.group_id,
+      }
+    } else {
+      &mut self.consumer.topic
+    }
   }
 }
