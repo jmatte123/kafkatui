@@ -1,5 +1,6 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use kafka::client::{FetchPartition, KafkaClient};
+use tui_scrollview::ScrollViewState;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Widget {
@@ -24,6 +25,8 @@ pub struct App {
   pub active_widget: Option<Widget>,
   pub consumer: Consumer,
   pub should_quit: bool,
+  pub scroll_view_state: ScrollViewState,
+  pub scroll_view_height: usize,
 }
 
 impl App {
@@ -38,6 +41,8 @@ impl App {
       widgets: vec![Widget::Topic, Widget::Broker, Widget::GroupId],
       active_widget_index: 0,
       active_widget: None,
+      scroll_view_state: ScrollViewState::new(),
+      scroll_view_height: 6,
       should_quit: false,
     }
   }
@@ -54,6 +59,12 @@ impl App {
           self.active_widget_index += 1;
           self.active_widget = self.widgets.get(self.active_widget_index).cloned()
         }
+      }
+      KeyCode::Char('u') if key_event.modifiers == KeyModifiers::CONTROL => {
+        self.scroll_view_state.scroll_up()
+      }
+      KeyCode::Char('d') if key_event.modifiers == KeyModifiers::CONTROL => {
+        self.scroll_view_state.scroll_down()
       }
       KeyCode::Char('k') if key_event.modifiers == KeyModifiers::CONTROL => {
         if self.active_widget_index > 0 {
@@ -91,7 +102,7 @@ impl App {
       "Starting consumer on Broker {} and Topic {}\n",
       self.consumer.broker, self.consumer.topic
     ));
-    let mut client = kafka::client::KafkaClient::new(vec![self.consumer.broker.to_owned()]);
+    let mut client = KafkaClient::new(vec![self.consumer.broker.to_owned()]);
     client.load_metadata_all().unwrap();
     let reqs = &[FetchPartition::new(&self.consumer.topic, 0, 0)];
     let resps = client.fetch_messages(reqs).unwrap();
@@ -112,6 +123,7 @@ impl App {
                 p.partition(),
                 data.highwatermark_offset()
               ));
+              self.scroll_view_height += data.messages().len() * 2;
               for msg in data.messages() {
                 self.consumer.message_box.push_str(&format!(
                   "topic: {} / partition: {} / message.offset: {} / message: {}\n",

@@ -1,14 +1,18 @@
+use std::iter;
+
 use ratatui::{
-  layout::{Constraint, Rect},
+  buffer::Buffer,
+  layout::{Constraint, Rect, Size},
   prelude::{Alignment, Layout},
   style::{Color, Style},
-  widgets::{Block, Borders, Paragraph},
+  widgets::{Block, Borders, Paragraph, StatefulWidget},
   Frame,
 };
+use tui_scrollview::{ScrollView, ScrollViewState};
 
 use crate::app::{App, Widget};
 
-pub fn render(app: &App, f: &mut Frame) {
+pub fn render(app: &mut App, f: &mut Frame) {
   let sub_layout = Layout::default()
     .margin(1)
     .constraints(vec![
@@ -54,12 +58,14 @@ pub fn render(app: &App, f: &mut Frame) {
       .borders(Borders::ALL)
       .style(app.get_style(&Widget::MessageBox)),
   );
+  let mut scroll_view = ScrollView::new(Size::new(sub_layout[4].width - 2, app.scroll_view_height.try_into().unwrap()));
 
+  scroll_view.render_widget(message_box, Rect::new(0, 0, sub_layout[4].width, app.scroll_view_height.try_into().unwrap()));
   f.render_widget(help, sub_layout[0]);
   f.render_widget(topic, sub_layout[1]);
   f.render_widget(broker, sub_layout[2]);
   f.render_widget(group_id, sub_layout[3]);
-  f.render_widget(message_box, sub_layout[4]);
+  f.render_stateful_widget(scroll_view, sub_layout[4], &mut app.scroll_view_state);
 }
 
 impl App {
