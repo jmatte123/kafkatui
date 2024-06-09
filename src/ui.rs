@@ -12,11 +12,13 @@ pub fn render(app: &App, f: &mut Frame) {
   let sub_layout = Layout::default()
     .margin(1)
     .constraints(vec![
-      Constraint::Percentage(20),
-      Constraint::Percentage(40),
-      Constraint::Percentage(40),
+      Constraint::Length(3),
+      Constraint::Length(3),
+      Constraint::Length(3),
+      Constraint::Length(3),
+      Constraint::Fill(100),
     ])
-    .split(Rect::new(0, 0, f.size().width, 10));
+    .split(Rect::new(0, 0, f.size().width, f.size().height));
 
   let help = Paragraph::new(String::from("Press ^j and ^k to move up and down"))
     .block(Block::default().borders(Borders::NONE));
@@ -29,6 +31,14 @@ pub fn render(app: &App, f: &mut Frame) {
       .style(app.get_style(&Widget::Topic)),
   );
 
+  let broker = Paragraph::new(String::from(&app.consumer.broker)).block(
+    Block::default()
+      .title("broker")
+      .title_alignment(Alignment::Left)
+      .borders(Borders::ALL)
+      .style(app.get_style(&Widget::Broker)),
+  );
+
   let group_id = Paragraph::new(String::from(&app.consumer.group_id)).block(
     Block::default()
       .title("group id")
@@ -37,9 +47,19 @@ pub fn render(app: &App, f: &mut Frame) {
       .style(app.get_style(&Widget::GroupId)),
   );
 
+  let message_box = Paragraph::new(String::from(&app.consumer.message_box)).block(
+    Block::default()
+      .title("messages")
+      .title_alignment(Alignment::Left)
+      .borders(Borders::ALL)
+      .style(app.get_style(&Widget::MessageBox)),
+  );
+
   f.render_widget(help, sub_layout[0]);
   f.render_widget(topic, sub_layout[1]);
-  f.render_widget(group_id, sub_layout[2]);
+  f.render_widget(broker, sub_layout[2]);
+  f.render_widget(group_id, sub_layout[3]);
+  f.render_widget(message_box, sub_layout[4]);
 }
 
 impl App {
