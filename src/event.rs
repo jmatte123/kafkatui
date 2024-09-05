@@ -24,7 +24,7 @@ impl EventHandler {
     let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
     let _tx = tx.clone();
 
-    let task = tokio::spawn(async move {
+    let _task = tokio::spawn(async move {
       let mut reader = crossterm::event::EventStream::new();
       let mut interval = tokio::time::interval(tick_rate);
       loop {

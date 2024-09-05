@@ -42,7 +42,7 @@ impl App {
       active_widget_index: 0,
       active_widget: None,
       scroll_view_state: ScrollViewState::new(),
-      scroll_view_height: 6,
+      scroll_view_height: 100,
       should_quit: false,
     }
   }
@@ -104,7 +104,7 @@ impl App {
     ));
     let mut client = KafkaClient::new(vec![self.consumer.broker.to_owned()]);
     client.load_metadata_all().unwrap();
-    let reqs = &[FetchPartition::new(&self.consumer.topic, 0, 0)];
+    let reqs = &[FetchPartition::new(&self.consumer.topic, 0, 1)];
     let resps = client.fetch_messages(reqs).unwrap();
     for resp in resps {
       for t in resp.topics() {

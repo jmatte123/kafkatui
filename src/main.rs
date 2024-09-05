@@ -10,6 +10,10 @@ pub mod ui;
 /// Terminal user interface.
 pub mod tui;
 
+/// logging
+pub mod logging;
+
+use crate::logging::initialize_logging;
 use app::App;
 use color_eyre::Result;
 use event::{Event, EventHandler};
@@ -18,6 +22,9 @@ use tui::Tui;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+  initialize_logging()?;
+  tracing::event!(tracing::Level::INFO, value = "value", test = 123);
+ 
   // Create an application.
   let mut app = App::new();
 
